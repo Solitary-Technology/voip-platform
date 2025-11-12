@@ -26,7 +26,7 @@ jobs:
           
           # Pull latest code
           echo "Pulling latest code..."
-          sudo git pull origin main
+          sudo git pull origin master
           
           # Install/update Python dependencies
           echo "Installing dependencies..."
