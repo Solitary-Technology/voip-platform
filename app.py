@@ -377,7 +377,7 @@ def freeswitch_dialplan():
     """Handle FreeSWITCH dialplan lookups for call routing"""
     destination = request.values.get('Caller-Destination-Number')
     caller = request.values.get('Caller-Caller-ID-Number')
-    direction = request.values.get('variable_direction') or 'inbound'
+    username = request.values.get('variable_user_name')
     
     if not destination:
         return '''<?xml version="1.0" encoding="UTF-8"?>
@@ -387,7 +387,30 @@ def freeswitch_dialplan():
   </section>
 </document>''', 404
     
-    # Find customer by phone number for inbound calls
+    # First, check if this is an outbound call from a registered customer
+    if username:
+        customer = Customer.query.filter_by(username=username, enabled=True).first()
+        if customer:
+            # This is an outbound call
+            xml = f'''<?xml version="1.0" encoding="UTF-8"?>
+<document type="freeswitch/xml">
+  <section name="dialplan">
+    <context name="default">
+      <extension name="outbound_{customer.id}">
+        <condition field="destination_number" expression="^(.+)$">
+          <action application="set" data="customer_id={customer.id}"/>
+          <action application="set" data="direction=outbound"/>
+          <action application="set" data="effective_caller_id_number={customer.phone_number}"/>
+          <action application="set" data="hangup_after_bridge=true"/>
+          <action application="bridge" data="sofia/gateway/yourcarrier/$1"/>
+        </condition>
+      </extension>
+    </context>
+  </section>
+</document>'''
+            return xml, 200, {'Content-Type': 'application/xml'}
+    
+    # Check if this is an inbound call to a customer DID
     customer = Customer.query.filter_by(phone_number=destination).first()
     
     if not customer:
@@ -398,7 +421,7 @@ def freeswitch_dialplan():
   </section>
 </document>''', 404
     
-    # Check if call forwarding is enabled
+    # This is an inbound call
     if customer.forward_enabled and customer.forward_to:
         # Forward the call to external number
         xml = f'''<?xml version="1.0" encoding="UTF-8"?>
