@@ -467,7 +467,6 @@ def freeswitch_dialplan():
           <action application="set" data="customer_id={customer.id}"/>
           <action application="set" data="direction=inbound"/>
           <action application="set" data="hangup_after_bridge=true"/>
-          <action application="answer"/>
           <action application="bridge" data="user/{customer.username}@default"/>
         </condition>
       </extension>
