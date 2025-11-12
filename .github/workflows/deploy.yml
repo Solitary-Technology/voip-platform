@@ -1,0 +1,56 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Deploy to server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          echo "=== Starting Deployment ==="
+          
+          cd /opt/voip-api
+          
+          # Pull latest code
+          echo "Pulling latest code..."
+          sudo git pull origin main
+          
+          # Install/update Python dependencies
+          echo "Installing dependencies..."
+          sudo bash -c "source /opt/voip-api/venv/bin/activate && pip install -r /opt/voip-api/requirements.txt"
+          
+          # Copy FreeSWITCH configs if they exist and changed
+          if [ -d "/opt/voip-api/freeswitch-config/autoload_configs" ]; then
+            echo "Updating FreeSWITCH configuration..."
+            sudo cp -r /opt/voip-api/freeswitch-config/autoload_configs/* /etc/freeswitch/autoload_configs/
+            sudo fs_cli -x "reloadxml" || echo "FreeSWITCH config reload skipped"
+          fi
+          
+          # Restart API service
+          echo "Restarting API service..."
+          sudo systemctl restart voip-api
+          
+          # Wait and check service status
+          sleep 3
+          if sudo systemctl is-active --quiet voip-api; then
+            echo "✓ API service is running"
+          else
+            echo "✗ API service failed to start"
+            sudo journalctl -u voip-api -n 20 --no-pager
+            exit 1
+          fi
+          
+          echo "=== Deployment Complete ==="
