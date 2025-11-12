@@ -450,7 +450,7 @@ def freeswitch_dialplan():
           <action application="set" data="direction=inbound"/>
           <action application="set" data="hangup_after_bridge=true"/>
           <action application="answer"/>
-          <action application="bridge" data="sofia/gateway/yourcarrier/{customer.forward_to}"/>
+          <action application="bridge" data="sofia/gateway/solitary/{customer.forward_to}"/>
         </condition>
       </extension>
     </context>
