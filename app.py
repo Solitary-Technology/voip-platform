@@ -376,6 +376,7 @@ def freeswitch_directory():
 def freeswitch_dialplan():
     """Handle FreeSWITCH dialplan lookups for call routing"""
     destination = request.values.get('Caller-Destination-Number')
+    caller = request.values.get('Caller-Caller-ID-Number')
     direction = request.values.get('variable_direction') or 'inbound'
     
     if not destination:
@@ -407,7 +408,9 @@ def freeswitch_dialplan():
       <extension name="forward_{customer.id}">
         <condition field="destination_number" expression="^{destination}$">
           <action application="set" data="customer_id={customer.id}"/>
+          <action application="set" data="direction=inbound"/>
           <action application="set" data="hangup_after_bridge=true"/>
+          <action application="answer"/>
           <action application="bridge" data="sofia/gateway/yourcarrier/{customer.forward_to}"/>
         </condition>
       </extension>
@@ -423,7 +426,9 @@ def freeswitch_dialplan():
       <extension name="local_{customer.id}">
         <condition field="destination_number" expression="^{destination}$">
           <action application="set" data="customer_id={customer.id}"/>
+          <action application="set" data="direction=inbound"/>
           <action application="set" data="hangup_after_bridge=true"/>
+          <action application="answer"/>
           <action application="bridge" data="user/{customer.username}@default"/>
         </condition>
       </extension>

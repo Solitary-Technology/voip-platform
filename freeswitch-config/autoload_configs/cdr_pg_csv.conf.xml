@@ -1,0 +1,29 @@
+<configuration name="cdr_pg_csv.conf" description="CDR PostgreSQL CSV">
+  <settings>
+    <!-- Database connection -->
+    <param name="db-info" value="host=localhost dbname=voip_platform user=voip_admin password=227ewgrg431985wfwerg11073700014662wergw2 options='-c client_min_messages=NOTICE' application_name='freeswitch'" />
+    
+    <!-- Table name -->
+    <param name="table-name" value="cdr"/>
+    
+    <!-- Log errors to console -->
+    <param name="debug" value="false"/>
+    
+    <!-- Retry on failure -->
+    <param name="retries" value="3"/>
+  </settings>
+  
+  <schema>
+    <!-- Map FreeSWITCH variables to database columns -->
+    <field var="customer_id" column="customer_id"/>
+    <field var="direction" column="direction"/>
+    <field var="caller_id_number" column="caller_id"/>
+    <field var="destination_number" column="destination"/>
+    <field var="start_stamp" column="start_time"/>
+    <field var="answer_stamp" column="answer_time"/>
+    <field var="end_stamp" column="end_time"/>
+    <field var="duration" column="duration"/>
+    <field var="billsec" column="billsec"/>
+    <field var="hangup_cause" column="hangup_cause"/>
+  </schema>
+</configuration>
