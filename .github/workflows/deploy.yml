@@ -24,19 +24,24 @@ jobs:
           
           cd /opt/voip-api
           
-          # Pull latest code
+          # Reset any local changes and pull latest
           echo "Pulling latest code..."
+          sudo git reset --hard origin/master
           sudo git pull origin master
           
           # Install/update Python dependencies
           echo "Installing dependencies..."
-          sudo bash -c "source /opt/voip-api/venv/bin/activate && pip install -r /opt/voip-api/requirements.txt"
+          cd /opt/voip-api
+          sudo -u root bash << 'SCRIPT'
+          source /opt/voip-api/venv/bin/activate
+          pip install -r /opt/voip-api/requirements.txt
+          SCRIPT
           
-          # Copy FreeSWITCH configs if they exist and changed
+          # Copy FreeSWITCH configs if they exist
           if [ -d "/opt/voip-api/freeswitch-config/autoload_configs" ]; then
             echo "Updating FreeSWITCH configuration..."
             sudo cp -r /opt/voip-api/freeswitch-config/autoload_configs/* /etc/freeswitch/autoload_configs/
-            sudo fs_cli -x "reloadxml" || echo "FreeSWITCH config reload skipped"
+            sudo fs_cli -x "reloadxml"
           fi
           
           # Restart API service
@@ -49,7 +54,6 @@ jobs:
             echo "✓ API service is running"
           else
             echo "✗ API service failed to start"
-            sudo journalctl -u voip-api -n 20 --no-pager
             exit 1
           fi
           
