@@ -418,7 +418,7 @@ def freeswitch_dialplan():
           <action application="set" data="direction=outbound"/>
           <action application="set" data="effective_caller_id_number={customer.phone_number}"/>
           <action application="set" data="hangup_after_bridge=true"/>
-          <action application="bridge" data="sofia/gateway/yourcarrier/$1"/>
+          <action application="bridge" data="sofia/gateway/solitary/$1"/>
         </condition>
       </extension>
     </context>
