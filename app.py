@@ -360,10 +360,12 @@ def freeswitch_directory():
           <param name="password" value="{customer.sip_password}"/>
         </params>
         <variables>
+          <variable name="user_context" value="default"/>
           <variable name="customer_id" value="{customer.id}"/>
           <variable name="phone_number" value="{customer.phone_number}"/>
           <variable name="forward_enabled" value="{str(customer.forward_enabled).lower()}"/>
           <variable name="forward_to" value="{customer.forward_to or ''}"/>
+          <variable name="outbound_caller_id_number" value="{customer.phone_number}"/>
         </variables>
       </user>
     </domain>
@@ -379,21 +381,19 @@ def freeswitch_dialplan():
     # DEBUG: Log all the values FreeSWITCH sends
     import sys
     print("=== DIALPLAN DEBUG ===", file=sys.stderr)
-    print(f"All request values: {dict(request.values)}", file=sys.stderr)
-    print("=====================", file=sys.stderr)
     
     destination = request.values.get('Caller-Destination-Number')
     caller = request.values.get('Caller-Caller-ID-Number')
     username = request.values.get('variable_user_name')
+    context = request.values.get('Caller-Context')
+    customer_id = request.values.get('variable_customer_id')
     
     print(f"Destination: {destination}", file=sys.stderr)
     print(f"Caller: {caller}", file=sys.stderr)
     print(f"Username: {username}", file=sys.stderr)
-    
-    """Handle FreeSWITCH dialplan lookups for call routing"""
-    destination = request.values.get('Caller-Destination-Number')
-    caller = request.values.get('Caller-Caller-ID-Number')
-    username = request.values.get('variable_user_name')
+    print(f"Context: {context}", file=sys.stderr)
+    print(f"Customer ID: {customer_id}", file=sys.stderr)
+    print("=====================", file=sys.stderr)
     
     if not destination:
         return '''<?xml version="1.0" encoding="UTF-8"?>
@@ -403,15 +403,15 @@ def freeswitch_dialplan():
   </section>
 </document>''', 404
     
-    # First, check if this is an outbound call from a registered customer
-    if username:
-        customer = Customer.query.filter_by(username=username, enabled=True).first()
+    # If we have a customer_id variable, this is from an authenticated user making an outbound call
+    if customer_id and username:
+        customer = Customer.query.filter_by(id=int(customer_id), username=username, enabled=True).first()
         if customer:
             # This is an outbound call
             xml = f'''<?xml version="1.0" encoding="UTF-8"?>
 <document type="freeswitch/xml">
   <section name="dialplan">
-    <context name="default">
+    <context name="{context or 'default'}">
       <extension name="outbound_{customer.id}">
         <condition field="destination_number" expression="^(.+)$">
           <action application="set" data="customer_id={customer.id}"/>
