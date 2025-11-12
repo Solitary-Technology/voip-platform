@@ -331,6 +331,7 @@ def get_cdr_summary(customer_id):
 def freeswitch_directory():
     """Handle FreeSWITCH directory lookups for authentication"""
     username = request.values.get('user') or request.values.get('username')
+    domain = request.values.get('domain') or 'default'
     
     if not username:
         return '''<?xml version="1.0" encoding="UTF-8"?>
@@ -353,7 +354,7 @@ def freeswitch_directory():
     xml = f'''<?xml version="1.0" encoding="UTF-8"?>
 <document type="freeswitch/xml">
   <section name="directory">
-    <domain name="default">
+    <domain name="{domain}">
       <user id="{customer.username}">
         <params>
           <param name="password" value="{customer.sip_password}"/>
