@@ -7,7 +7,7 @@ from sqlalchemy import func
 
 app = Flask(__name__)
 
-# Database configuration
+# Database configuration 
 DB_USER = os.getenv('DB_USER', 'voip_admin')
 DB_PASS = os.getenv('DB_PASS', 'ChangeThisToSecurePassword123!')
 DB_HOST = os.getenv('DB_HOST', 'localhost')
