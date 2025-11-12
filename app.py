@@ -375,6 +375,22 @@ def freeswitch_directory():
 @app.route('/freeswitch/dialplan', methods=['POST'])
 def freeswitch_dialplan():
     """Handle FreeSWITCH dialplan lookups for call routing"""
+    
+    # DEBUG: Log all the values FreeSWITCH sends
+    import sys
+    print("=== DIALPLAN DEBUG ===", file=sys.stderr)
+    print(f"All request values: {dict(request.values)}", file=sys.stderr)
+    print("=====================", file=sys.stderr)
+    
+    destination = request.values.get('Caller-Destination-Number')
+    caller = request.values.get('Caller-Caller-ID-Number')
+    username = request.values.get('variable_user_name')
+    
+    print(f"Destination: {destination}", file=sys.stderr)
+    print(f"Caller: {caller}", file=sys.stderr)
+    print(f"Username: {username}", file=sys.stderr)
+    
+    """Handle FreeSWITCH dialplan lookups for call routing"""
     destination = request.values.get('Caller-Destination-Number')
     caller = request.values.get('Caller-Caller-ID-Number')
     username = request.values.get('variable_user_name')
