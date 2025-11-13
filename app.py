@@ -418,7 +418,7 @@ def freeswitch_dialplan():
           <action application="set" data="direction=outbound"/>
           <action application="set" data="effective_caller_id_number={customer.phone_number}"/>
           <action application="set" data="hangup_after_bridge=true"/>
-          <action application="bridge" data="sofia/gateway/solitary/$1"/>
+          <action application="bridge" data="sofia/gateway/virtutel/$1"/>
         </condition>
       </extension>
     </context>
@@ -449,7 +449,7 @@ def freeswitch_dialplan():
           <action application="set" data="customer_id={customer.id}"/>
           <action application="set" data="direction=inbound"/>
           <action application="set" data="hangup_after_bridge=true"/>
-          <action application="bridge" data="sofia/gateway/solitary/{customer.forward_to}"/>
+          <action application="bridge" data="sofia/gateway/virtutel/{customer.forward_to}"/>
         </condition>
       </extension>
     </context>
